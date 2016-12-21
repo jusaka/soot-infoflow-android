@@ -22,6 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -36,6 +38,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import soot.G;
+import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.CallgraphAlgorithm;
@@ -57,6 +61,10 @@ import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.SystemClassHandler;
+import soot.jimple.spark.pag.MethodPAG;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.options.Options;
 
 public class Test {
@@ -240,11 +248,27 @@ public class Test {
 					runAnalysis(fullFilePath, args[1]);
 				repeatCount--;
 			}
-			
+			doMyTest();
 			System.gc();
 		}
 	}
 
+	private static void doMyTest(){
+//		CallGraph cg=Scene.v().getCallGraph();
+//		Iterator<Edge> iterator=cg.iterator();
+//		while(iterator.hasNext()){
+//			Edge edge=iterator.next();
+//			System.out.println(edge.src()+"------>"+edge.tgt());
+//		}
+		HashMap<SootMethod, MethodPAG> MethodPAG_methodToPag=G.v().MethodPAG_methodToPag;
+		for(SootMethod method:MethodPAG_methodToPag.keySet()){
+			
+			MethodPAG pag=MethodPAG_methodToPag.get(method);
+			System.out.println(method+" "+pag.getMethod().isPhantom());
+			//method.isSynchronized();
+		}
+		
+	}
 	/**
 	 * Parses the optional command-line arguments
 	 * @param args The array of arguments to parse
