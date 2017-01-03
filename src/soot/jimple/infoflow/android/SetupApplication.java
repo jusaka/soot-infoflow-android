@@ -62,6 +62,7 @@ import soot.jimple.infoflow.rifl.RIFLSourceSinkDefinitionProvider;
 import soot.jimple.infoflow.source.data.ISourceSinkDefinitionProvider;
 import soot.jimple.infoflow.source.data.SourceSinkDefinition;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.spark.summary.ClassesObjects;
 import soot.options.Options;
 
 public class SetupApplication {
@@ -98,7 +99,8 @@ public class SetupApplication {
 	
 	private Set<Stmt> collectedSources = null;
 	private Set<Stmt> collectedSinks = null;
-
+	
+	private ClassesObjects classesObjects=null;
 	private String callbackFile = "AndroidCallbacks.txt"; 
 	
 	/**
@@ -113,7 +115,7 @@ public class SetupApplication {
 	public SetupApplication(String androidJar, String apkFileLocation) {
 		this(androidJar, apkFileLocation, "", null);
 	}
-
+	
 	/**
 	 * Creates a new instance of the {@link SetupApplication} class
 	 * 
@@ -483,6 +485,10 @@ public class SetupApplication {
 			// Create the new iteration of the main method
 			soot.G.reset();
 			initializeSoot(true);
+			if(classesObjects!=null){
+				Options.v().set_classes_objects(classesObjects);
+			}
+			
 			createMainMethod();
 
 			if (jimpleClass == null) {
@@ -608,6 +614,9 @@ public class SetupApplication {
 		soot.G.reset();
 		initializeSoot(false);
 		
+		if(classesObjects!=null){
+			Options.v().set_classes_objects(classesObjects);
+		}
 		// Collect the callback interfaces implemented in the app's
 		// source code
 		AbstractCallbackAnalyzer jimpleClass = callbackClasses == null
@@ -828,8 +837,11 @@ public class SetupApplication {
 		if (null != ipcManager) {
 			info.setIPCManager(ipcManager);
 		}
-
-		info.computeInfoflow(apkFileLocation, path, entryPointCreator, sourceSinkManager);
+		if(classesObjects!=null){
+			info.computeInfoflow(apkFileLocation, path, classesObjects,entryPointCreator, sourceSinkManager);
+		}else{
+			info.computeInfoflow(apkFileLocation, path, entryPointCreator, sourceSinkManager);
+		}
 		this.maxMemoryConsumption = info.getMaxMemoryConsumption();
 		this.collectedSources = info.getCollectedSources();
 		this.collectedSinks = info.getCollectedSinks();
@@ -919,6 +931,9 @@ public class SetupApplication {
 	
 	public void setCallbackFile(String callbackFile) {
 		this.callbackFile = callbackFile;
+	}
+	public void setClassesObjects(ClassesObjects classesObjects){
+		this.classesObjects=classesObjects;
 	}
 	
 }

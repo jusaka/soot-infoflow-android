@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -39,7 +38,6 @@ import javax.xml.stream.XMLStreamException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import soot.G;
-import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.CallgraphAlgorithm;
@@ -62,9 +60,7 @@ import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.spark.pag.MethodPAG;
-import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.Edge;
-import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.jimple.spark.summary.ClassesObjects;
 import soot.options.Options;
 
 public class Test {
@@ -142,6 +138,7 @@ public class Test {
 	private static boolean noTaintWrapper = false;
 	private static String summaryPath = "";
 	private static String resultFilePath = "";
+	private static String pagPath=null;
 	
 	private static boolean DEBUG = false;
 
@@ -241,14 +238,14 @@ public class Test {
 			while (repeatCount > 0) {
 				System.gc();
 				if (timeout > 0)
-					runAnalysisTimeout(fullFilePath, args[1]);
+					runAnalysisTimeout(fullFilePath, args[1],pagPath);
 				else if (sysTimeout > 0)
 					runAnalysisSysTimeout(fullFilePath, args[1]);
 				else
-					runAnalysis(fullFilePath, args[1]);
+					runAnalysis(fullFilePath, args[1],pagPath);
 				repeatCount--;
 			}
-			doMyTest();
+			//doMyTest();
 			System.gc();
 		}
 	}
@@ -378,6 +375,10 @@ public class Test {
 				summaryPath = args[i + 1];
 				i += 2;
 			}
+			else if (args[i].equalsIgnoreCase("--pagpath")) {
+				pagPath = args[i + 1];
+				i += 2;
+			}
 			else if (args[i].equalsIgnoreCase("--saveresults")) {
 				resultFilePath = args[i + 1];
 				i += 2;
@@ -454,7 +455,7 @@ public class Test {
 		return true;
 	}
 	
-	private static void runAnalysisTimeout(final String fileName, final String androidJar) {
+	private static void runAnalysisTimeout(final String fileName, final String androidJar,String pagPath) {
 		FutureTask<InfoflowResults> task = new FutureTask<InfoflowResults>(new Callable<InfoflowResults>() {
 
 			@Override
@@ -464,7 +465,7 @@ public class Test {
 				try {
 					final long beforeRun = System.nanoTime();
 					wr.write("Running data flow analysis...\n");
-					final InfoflowResults res = runAnalysis(fileName, androidJar);
+					final InfoflowResults res = runAnalysis(fileName, androidJar,pagPath);
 					wr.write("Analysis has run for " + (System.nanoTime() - beforeRun) / 1E9 + " seconds\n");
 					
 					wr.flush();
@@ -607,10 +608,11 @@ public class Test {
 		}
 	}
 
-	private static InfoflowResults runAnalysis(final String fileName, final String androidJar) {
+	private static InfoflowResults runAnalysis(final String fileName, final String androidJar,String pagPath) {
 		try {
 			final long beforeRun = System.nanoTime();
-
+			
+			
 			final SetupApplication app;
 			if (null == ipcManager)
 			{
@@ -619,6 +621,10 @@ public class Test {
 			else
 			{
 				app = new SetupApplication(androidJar, fileName, ipcManager);
+			}
+			if(pagPath!=null&&!pagPath.isEmpty()){
+				ClassesObjects classesObjects=new ClassesObjects(pagPath);
+				app.setClassesObjects(classesObjects);
 			}
 			
 			// Set configuration object
@@ -711,7 +717,6 @@ public class Test {
 		try {
 			Class clzLazySummary = Class.forName("soot.jimple.infoflow.methodSummary.data.provider.LazySummaryProvider");
 			Class itfLazySummary = Class.forName("soot.jimple.infoflow.methodSummary.data.provider.IMethodSummaryProvider");
-			
 			Object lazySummary = clzLazySummary.getConstructor(File.class).newInstance(new File(summaryPath));
 			
 			ITaintPropagationWrapper summaryWrapper = (ITaintPropagationWrapper) Class.forName
