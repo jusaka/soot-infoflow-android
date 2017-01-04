@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -38,6 +39,7 @@ import javax.xml.stream.XMLStreamException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import soot.G;
+import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.CallgraphAlgorithm;
@@ -61,6 +63,8 @@ import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.spark.pag.MethodPAG;
 import soot.jimple.spark.summary.ClassesObjects;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 
 public class Test {
@@ -245,25 +249,25 @@ public class Test {
 					runAnalysis(fullFilePath, args[1],pagPath);
 				repeatCount--;
 			}
-			//doMyTest();
+			doMyTest();
 			System.gc();
 		}
 	}
 
 	private static void doMyTest(){
-//		CallGraph cg=Scene.v().getCallGraph();
-//		Iterator<Edge> iterator=cg.iterator();
-//		while(iterator.hasNext()){
-//			Edge edge=iterator.next();
-//			System.out.println(edge.src()+"------>"+edge.tgt());
-//		}
-		HashMap<SootMethod, MethodPAG> MethodPAG_methodToPag=G.v().MethodPAG_methodToPag;
-		for(SootMethod method:MethodPAG_methodToPag.keySet()){
-			
-			MethodPAG pag=MethodPAG_methodToPag.get(method);
-			System.out.println(method+" "+pag.getMethod().isPhantom());
-			//method.isSynchronized();
+		CallGraph cg=Scene.v().getCallGraph();
+		Iterator<Edge> iterator=cg.iterator();
+		while(iterator.hasNext()){
+			Edge edge=iterator.next();
+			System.out.println(edge.src()+"------>"+edge.tgt());
 		}
+//		HashMap<SootMethod, MethodPAG> MethodPAG_methodToPag=G.v().MethodPAG_methodToPag;
+//		for(SootMethod method:MethodPAG_methodToPag.keySet()){
+//			
+//			MethodPAG pag=MethodPAG_methodToPag.get(method);
+//			System.out.println(method+" "+pag.getMethod().isPhantom());
+//			//method.isSynchronized();
+//		}
 		
 	}
 	/**
