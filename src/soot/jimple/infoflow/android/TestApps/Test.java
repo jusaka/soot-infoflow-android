@@ -249,7 +249,7 @@ public class Test {
 					runAnalysis(fullFilePath, args[1],pagPath);
 				repeatCount--;
 			}
-			doMyTest();
+			//doMyTest();
 			System.gc();
 		}
 	}
