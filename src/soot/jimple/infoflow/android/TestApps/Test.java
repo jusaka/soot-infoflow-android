@@ -39,6 +39,7 @@ import javax.xml.stream.XMLStreamException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import soot.G;
+import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.Stmt;
@@ -65,6 +66,7 @@ import soot.jimple.spark.pag.MethodPAG;
 import soot.jimple.spark.summary.ClassesObjects;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.options.Options;
 
 public class Test {
@@ -255,12 +257,16 @@ public class Test {
 	}
 
 	private static void doMyTest(){
-		CallGraph cg=Scene.v().getCallGraph();
-		Iterator<Edge> iterator=cg.iterator();
-		while(iterator.hasNext()){
-			Edge edge=iterator.next();
-			System.out.println(edge.src()+"------>"+edge.tgt());
+		ReachableMethods rm=Scene.v().getReachableMethods();
+		for(MethodOrMethodContext momc:rm.getMethods()){
+			System.out.println(momc.method());
 		}
+//		CallGraph cg=Scene.v().getCallGraph();
+//		Iterator<Edge> iterator=cg.iterator();
+//		while(iterator.hasNext()){
+//			Edge edge=iterator.next();
+//			System.out.println(edge.src()+"------>"+edge.tgt());
+//		}
 //		HashMap<SootMethod, MethodPAG> MethodPAG_methodToPag=G.v().MethodPAG_methodToPag;
 //		for(SootMethod method:MethodPAG_methodToPag.keySet()){
 //			
